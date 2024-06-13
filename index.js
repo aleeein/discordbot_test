@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const { Client, GatewayIntentBits } = require("discord.js");
 
-// Express setup
+/* Express setup */
 app.listen(3000, () => {
   console.log("Bot is ready");
 });
@@ -22,6 +22,7 @@ const client = new Client({
   ],
 });
 
+/* Define prefix used to call the bot */
 const PREFIX = "!ask";
 let tasks = [];
 
@@ -30,7 +31,7 @@ client.on("messageCreate", async (message) => {
 
   /* Remove the prefix from the message content to simplify command checks */
   const commandBody = message.content.slice(PREFIX.length).trim();
-  const args = commandBody.split(' ');
+  const args = commandBody.split(" ");
   const command = args.shift().toLowerCase();
 
   if (command === "test") {
@@ -53,11 +54,19 @@ client.on("messageCreate", async (message) => {
     }, 2000);
   }
 
+  /* Task management commands */
   if (command === "addtask") {
-    message.channel.send("What task do you want to add? Use the template: (task name) - (deadline)");
+    message.channel.send(
+      "What task do you want to add? Use the template: (task name) - (deadline)"
+    );
 
-    const filter = response => response.author.id === message.author.id;
-    const collected = await message.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
+    const filter = (response) => response.author.id === message.author.id;
+    const collected = await message.channel.awaitMessages({
+      filter,
+      max: 1,
+      time: 60000,
+      errors: ["time"],
+    });
     const taskMessage = collected.first().content;
 
     tasks.push(taskMessage);
@@ -91,10 +100,17 @@ client.on("messageCreate", async (message) => {
     if (isNaN(taskNumber) || taskNumber < 1 || taskNumber > tasks.length) {
       message.channel.send("Invalid task number.");
     } else {
-      message.channel.send("Edit the task using the template: (task name) - (deadline)");
+      message.channel.send(
+        "Edit the task using the template: (task name) - (deadline)"
+      );
 
-      const filter = response => response.author.id === message.author.id;
-      const collected = await message.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
+      const filter = (response) => response.author.id === message.author.id;
+      const collected = await message.channel.awaitMessages({
+        filter,
+        max: 1,
+        time: 60000,
+        errors: ["time"],
+      });
       const newTaskMessage = collected.first().content;
 
       tasks[taskNumber - 1] = newTaskMessage;
