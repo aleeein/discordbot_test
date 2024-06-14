@@ -27,7 +27,7 @@ const client = new Client({
 /* Google Generative AI setup */
 const API_KEY = process.env.API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
-const MODEL = "gemini-1.5-flash"; // Replace with your actual model name
+const MODEL = "gemini-pro"; // Replace with your actual model name
 
 /* Define prefix used to call the bot */
 const PREFIX = "!ask";
