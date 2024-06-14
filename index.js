@@ -1,7 +1,9 @@
 require("dotenv/config");
 const express = require("express");
-const app = express();
 const { Client, GatewayIntentBits } = require("discord.js");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const app = express();
 
 /* Express setup */
 app.listen(3000, () => {
@@ -22,18 +24,45 @@ const client = new Client({
   ],
 });
 
+/* Google Generative AI setup */
+const API_KEY = process.env.API_KEY;
+const genAI = new GoogleGenerativeAI(API_KEY);
+const MODEL = "gemini-1.5-flash"; // Replace with your actual model name
+
 /* Define prefix used to call the bot */
 const PREFIX = "!ask";
 let tasks = [];
 
 client.on("messageCreate", async (message) => {
-  if (!message.content.startsWith(PREFIX)) return;
+  if (message.author.bot) return; // Ignore messages from bots
+
+  if (!message.content.startsWith(PREFIX) && !message.content.startsWith("!gemini")) return;
 
   /* Remove the prefix from the message content to simplify command checks */
-  const commandBody = message.content.slice(PREFIX.length).trim();
+  const commandBody = message.content.startsWith(PREFIX)
+    ? message.content.slice(PREFIX.length).trim()
+    : message.content.slice("!gemini".length).trim();
   const args = commandBody.split(" ");
   const command = args.shift().toLowerCase();
 
+  /* Gemini AI command */
+  if (message.content.startsWith("!gemini")) {
+    try {
+      const prompt = commandBody;
+      const model = genAI.getGenerativeModel({ model: MODEL });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      await message.reply(text);
+    } catch (error) {
+      console.error(error);
+      message.channel.send("Sorry, I couldn't process your request.");
+    }
+    return;
+  }
+
+  /* Other bot commands */
   if (command === "test") {
     message.channel.send("masuk");
   }
