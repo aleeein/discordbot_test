@@ -2,6 +2,13 @@ require("dotenv/config");
 const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
 const { generateResponse } = require("./gemini"); // Import the Gemini function
+const {
+  addTask,
+  viewTask,
+  deleteTask,
+  editTask,
+  deleteAllTasks,
+} = require("./tasks"); // Import task management functions
 
 const app = express();
 
@@ -26,7 +33,6 @@ const client = new Client({
 
 /* Define prefix used to call the bot */
 const PREFIX = "!ask";
-let tasks = [];
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return; // Ignore messages from bots
@@ -53,12 +59,20 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  /* Other bot commands */
-  if (command === "test") {
+  /* Task management commands */
+  if (command === "addtask") {
+    addTask(message);
+  } else if (command === "viewtask") {
+    viewTask(message);
+  } else if (command === "deletetask") {
+    deleteTask(message, args);
+  } else if (command === "edittask") {
+    editTask(message, args);
+  } else if (command === "deletealltask") {
+    deleteAllTasks(message);
+  } else if (command === "test") {
     message.channel.send("masuk");
-  }
-
-  if (command === "luck") {
+  } else if (command === "luck") {
     console.log("testing");
     const loadingMessage = await message.channel.send("please wait...");
 
@@ -72,79 +86,6 @@ client.on("messageCreate", async (message) => {
       }
       loadingMessage.edit(finalMessage);
     }, 2000);
-  }
-
-  /* Task management commands */
-  if (command === "addtask") {
-    message.channel.send(
-      "What task do you want to add? Use the template: (task name) - (deadline)"
-    );
-
-    const filter = (response) => response.author.id === message.author.id;
-    const collected = await message.channel.awaitMessages({
-      filter,
-      max: 1,
-      time: 60000,
-      errors: ["time"],
-    });
-    const taskMessage = collected.first().content;
-
-    tasks.push(taskMessage);
-    message.channel.send(`Task added: ${taskMessage}`);
-  }
-
-  if (command === "viewtask") {
-    if (tasks.length === 0) {
-      message.channel.send("No tasks added yet.");
-    } else {
-      let taskList = "Tasks:\n";
-      tasks.forEach((task, index) => {
-        taskList += `${index + 1}. ${task}\n`;
-      });
-      message.channel.send(taskList);
-    }
-  }
-
-  if (command === "deletetask") {
-    const taskNumber = parseInt(args[0]);
-    if (isNaN(taskNumber) || taskNumber < 1 || taskNumber > tasks.length) {
-      message.channel.send("Invalid task number.");
-    } else {
-      const deletedTask = tasks.splice(taskNumber - 1, 1);
-      message.channel.send(`Task deleted: ${deletedTask}`);
-    }
-  }
-
-  if (command === "edittask") {
-    const taskNumber = parseInt(args[0]);
-    if (isNaN(taskNumber) || taskNumber < 1 || taskNumber > tasks.length) {
-      message.channel.send("Invalid task number.");
-    } else {
-      message.channel.send(
-        "Edit the task using the template: (task name) - (deadline)"
-      );
-
-      const filter = (response) => response.author.id === message.author.id;
-      const collected = await message.channel.awaitMessages({
-        filter,
-        max: 1,
-        time: 60000,
-        errors: ["time"],
-      });
-      const newTaskMessage = collected.first().content;
-
-      tasks[taskNumber - 1] = newTaskMessage;
-      message.channel.send(`Task updated: ${newTaskMessage}`);
-    }
-  }
-
-  if (command === "deletealltask") {
-    if (tasks.length === 0) {
-      message.channel.send("No tasks to delete.");
-    } else {
-      tasks = [];
-      message.channel.send("All tasks have been deleted.");
-    }
   }
 });
 
