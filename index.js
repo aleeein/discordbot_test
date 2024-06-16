@@ -1,7 +1,7 @@
 require("dotenv/config");
 const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { generateResponse } = require("./gemini"); // Import the Gemini function
 
 const app = express();
 
@@ -24,11 +24,6 @@ const client = new Client({
   ],
 });
 
-/* Google Generative AI setup */
-const API_KEY = process.env.API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
-const MODEL = "gemini-pro"; // Replace with your actual model name
-
 /* Define prefix used to call the bot */
 const PREFIX = "!ask";
 let tasks = [];
@@ -49,12 +44,8 @@ client.on("messageCreate", async (message) => {
   if (message.content.startsWith("!gemini")) {
     try {
       const prompt = commandBody;
-      const model = genAI.getGenerativeModel({ model: MODEL });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      await message.reply(text);
+      const responseText = await generateResponse(prompt);
+      await message.reply(responseText);
     } catch (error) {
       console.error(error);
       message.channel.send("Sorry, I couldn't process your request.");
