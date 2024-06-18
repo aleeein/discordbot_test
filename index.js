@@ -9,6 +9,7 @@ const {
   editTask,
   deleteAllTasks,
 } = require("./tasks"); // Import task management functions
+const { randomLuck } = require("./luck"); // Import luck function
 
 const app = express();
 
@@ -73,19 +74,7 @@ client.on("messageCreate", async (message) => {
   } else if (command === "test") {
     message.channel.send("masuk");
   } else if (command === "luck") {
-    console.log("testing");
-    const loadingMessage = await message.channel.send("please wait...");
-
-    setTimeout(async () => {
-      const randomNumber = Math.floor(Math.random() * 10) + 1;
-      let finalMessage;
-      if (randomNumber >= 7) {
-        finalMessage = `You are very lucky! (Your number is ${randomNumber})`;
-      } else {
-        finalMessage = `Try again later. (Your number is ${randomNumber})`;
-      }
-      loadingMessage.edit(finalMessage);
-    }, 2000);
+    randomLuck(message);
   }
 });
 
